@@ -4,7 +4,7 @@
 /** HashRegistry contracts IQOSYS has published, by chain ID. A proof naming another contract is reported. */
 export const KNOWN_REGISTRIES = {
     80002: ["0x57d9f03da08de4448053a695031d50e6fc821dde"],
-    137: [],
+    137: ["0xeda7f04d01734658b054a5cb6a6af8caa5e904db"],
 };
 
 /** Public JSON-RPC nodes tried in turn when none is given. Any Polygon node gives the same answer. */
