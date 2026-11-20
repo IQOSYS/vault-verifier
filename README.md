@@ -2,7 +2,7 @@
 
 Checks an IQOSYS proof of origin without IQOSYS: with SHA-256 and a public Polygon node only. It keeps working if IQOSYS stops operating.
 
-It needs either a PDF sealed by IQOSYS (the proof is attached to it), or the registered document and its public proof `iqosys-proof-<reference>.json`.
+It needs either a PDF sealed by IQOSYS (the proof is attached to it), or the registered document and its public proof `iqosys-proof-<reference>.json`. While IQOSYS operates, the same proof is at `https://www.iqosys.com/api/vault/verify/secrets/<reference>`: save that page as a `.json` file.
 
 ## What it checks
 

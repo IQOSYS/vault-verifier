@@ -163,6 +163,8 @@ export const readChain = async ({ rpcUrl, chainId, registry, root, txHash }) => 
  * proof JSON (taken from the sealed PDF when not given). Returns every check, passed or failed.
  */
 export const verify = async ({ file, proof, rpcUrl } = {}) => {
+    // The proof as the IQOSYS API returns it ({"data": {...}}) is accepted too.
+    if (proof && !Array.isArray(proof.anchors) && proof.data && Array.isArray(proof.data.anchors)) proof = proof.data;
     const checks = [];
     const check = (ok, label, detail = "") => checks.push({ ok, label, detail });
 
@@ -172,6 +174,10 @@ export const verify = async ({ file, proof, rpcUrl } = {}) => {
         check(true, original ? "The file is a sealed PDF: its original part is checked" : "The file is checked as the original document");
         proof ??= await attachedProof(file);
         if (original && proof) check(true, "Public proof read from the PDF's attachment");
+        if (original && !proof) {
+            check(false, "This sealed PDF has no proof attached (sealed before IQOSYS attached it, or the attachment was removed): give the JSON file iqosys-proof-....json");
+            return { ok: false, checks, proof: null };
+        }
     }
     if (!proof) {
         check(false, "No public proof: give the JSON file (iqosys-proof-....json) or a PDF sealed by IQOSYS");

@@ -63,3 +63,14 @@ test("a modified document, an unknown root, a superseded root and a wrong chain 
     globalThis.fetch = fakeNode({ chainId: 1 });
     assert.ok((await verify({ file: sealed, rpcUrl: "https://node.example" })).checks.some((check) => !check.ok && /not reachable/.test(check.label)));
 });
+
+test("a sealed PDF without its attachment asks for the JSON, and the API's {data} wrapper is accepted", async () => {
+    const original = originalPart(sealed);
+    const bare = new Uint8Array([...original, ...new TextEncoder().encode("\n% IQOSYS proof seal SEC-RJ4FVXHZAH\n%%EOF\n")]);
+    const result = await verify({ file: bare });
+    assert.match(result.checks.at(-1).label, /no proof attached/);
+
+    globalThis.fetch = fakeNode();
+    const wrapped = await verify({ file: bare, proof: { data: proof }, rpcUrl: "https://node.example" });
+    assert.ok(wrapped.checks.some((check) => check.ok && check.label === "The document's SHA-256 is in the proof"));
+});
