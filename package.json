@@ -1,0 +1,10 @@
+{
+  "name": "iqosys-vault-verifier",
+  "version": "1.0.0",
+  "description": "Checks an IQOSYS proof of origin with SHA-256 and a public Polygon node, without IQOSYS.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "iqosys-verify": "cli.mjs" },
+  "engines": { "node": ">=20" },
+  "scripts": { "test": "node --test test/*.test.mjs" }
+}

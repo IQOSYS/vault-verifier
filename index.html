@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IQOSYS Vault verifier</title>
+<style>
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+  body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { color: #4c1d95; margin-bottom: .25rem; }
+  label { display: block; margin-top: 1rem; font-weight: 600; }
+  input[type=text] { width: 100%; padding: .4rem; }
+  button { margin-top: 1.25rem; padding: .6rem 1.2rem; font-size: 1rem; background: #6d28d9; color: #fff; border: 0; border-radius: .4rem; cursor: pointer; }
+  button:hover { background: #f97316; }
+  ul { list-style: none; padding: 0; }
+  li { padding: .4rem .6rem; border-left: 4px solid; margin: .3rem 0; word-break: break-all; }
+  li.ok { border-color: #16a34a; } li.fail { border-color: #dc2626; }
+  small { color: #6b7280; display: block; }
+  #verdict { font-size: 1.3rem; font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>IQOSYS Vault verifier</h1>
+<p>Checks an IQOSYS proof of origin with SHA-256 and a public Polygon node only. Your file is read in this page and never sent anywhere; no IQOSYS server is contacted.</p>
+
+<label for="file">Registered document or sealed PDF</label>
+<input id="file" type="file">
+<label for="proof">Public proof (iqosys-proof-....json), not needed for a sealed PDF</label>
+<input id="proof" type="file" accept=".json,application/json">
+<label for="rpc">Polygon node (optional; public nodes are used otherwise)</label>
+<input id="rpc" type="text" placeholder="https://...">
+<button id="run" type="button">Verify</button>
+
+<p id="verdict" role="status"></p>
+<ul id="checks"></ul>
+
+<script type="module">
+import { verify } from "./verifier.mjs";
+const read = async (input) => (input.files[0] ? new Uint8Array(await input.files[0].arrayBuffer()) : undefined);
+document.getElementById("run").addEventListener("click", async () => {
+    const verdict = document.getElementById("verdict");
+    const list = document.getElementById("checks");
+    verdict.textContent = "Checking…";
+    list.replaceChildren();
+    try {
+        const proofBytes = await read(document.getElementById("proof"));
+        const result = await verify({
+            file: await read(document.getElementById("file")),
+            proof: proofBytes ? JSON.parse(new TextDecoder().decode(proofBytes)) : undefined,
+            rpcUrl: document.getElementById("rpc").value.trim() || undefined,
+        });
+        for (const { ok, label, detail } of result.checks) {
+            const item = document.createElement("li");
+            item.className = ok ? "ok" : "fail";
+            item.textContent = `${ok ? "✓" : "✗"} ${label}`;
+            if (detail) {
+                const small = document.createElement("small");
+                small.textContent = detail;
+                item.append(small);
+            }
+            list.append(item);
+        }
+        verdict.textContent = result.ok ? "Verified: every check passed." : "Not verified: see the failed checks.";
+    } catch (error) {
+        verdict.textContent = `Error: ${error.message}`;
+    }
+});
+</script>
+</body>
+</html>
